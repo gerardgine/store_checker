@@ -1,0 +1,8 @@
+[Twilio]
+TO_NUMBER = "phone number where you'll receive phone calls/SMS"
+FROM_NUMBER = "Twilio phone number"
+TWILIO_URL = "http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient"
+ACCOUNT_SID = "your account SID"
+AUTH_TOKEN = "your auth token"
+CALL_TIMEOUT = 45
+GRACE_PERIOD = 10
