@@ -134,7 +134,6 @@ while True:
                         print "Call status '{}'. Attempting new call" \
                               "...".format(call_status)
             elif iteration_count == 0:
-                # We don't want to wait after the first request
                 print "First iteration: {}".format(date)
             else:
                 print "Date hasn't changed ({})".format(date)
@@ -149,5 +148,4 @@ while True:
 
     iteration_count += 1
 
-    if iteration_count > 1:
-        time.sleep(RETRIAL_INTERVAL)
+    time.sleep(RETRIAL_INTERVAL)
