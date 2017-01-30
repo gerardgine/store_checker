@@ -17,6 +17,7 @@ ACCOUNT_SID = config.get('Twilio', 'ACCOUNT_SID')
 AUTH_TOKEN = config.get('Twilio', 'AUTH_TOKEN')
 CALL_TIMEOUT = config.getint('Twilio', 'CALL_TIMEOUT')
 GRACE_PERIOD = config.getint('Twilio', 'GRACE_PERIOD')
+RETRIAL_INTERVAL = config.getint('Twilio', 'RETRIAL_INTERVAL')
 
 client = TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN)
 
@@ -91,7 +92,6 @@ else:
 print "Checking {}...".format(", ".join(
     store["name"] for store in stores_to_check))
 
-RETRIAL_INTERVAL = 60  # 1 minute
 iteration_count = 0
 last_date = {}
 
