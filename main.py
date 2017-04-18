@@ -100,11 +100,14 @@ while True:
     ok_responses = {}
     ko_responses = {}
     for selected_store in stores_to_check:
-        resp = requests.get(selected_store["url"])
-        if resp.status_code == 200:
-            ok_responses[selected_store["name"]] = resp
-        else:
-            ko_responses[selected_store["name"]] = resp
+        try:
+            resp = requests.get(selected_store["url"])
+            if resp.status_code == 200:
+                ok_responses[selected_store["name"]] = resp
+            else:
+                ko_responses[selected_store["name"]] = resp
+        except Exception as e:
+            ko_responses[selected_store["name"]] = e
 
     for store_name, resp in ok_responses.iteritems():
         print "Successful response from {}".format(store_name)
@@ -114,7 +117,9 @@ while True:
         split_data = pickup_search_quote.split("<br/>")
         if len(split_data) == 2:
             date = split_data[1]
-            if iteration_count > 0 and last_date[store_name] != date:
+            if (iteration_count > 0 and
+                        store_name in last_date and
+                        last_date[store_name] != date):
                 success_msg = "The new date for {} is {}".format(
                     store_name, date)
                 print "---> " + success_msg
@@ -143,8 +148,17 @@ while True:
                 pickup_search_quote)
 
     for store_name, resp in ko_responses.iteritems():
-        print "The request to {} returned status code {} and body:\n{}".format(
-            store_name, resp.status_code, resp.text)
+        if isinstance(resp, requests.Response):
+            print "The request to {} returned status code {} and " \
+                  "body:\n{}".format(store_name, resp.status_code, resp.text)
+        elif isinstance(resp, Exception):
+            print "The request to {} raised a '{}' exception with error " \
+                  "number {} and message:\n{}".format(store_name,
+                                                      type(resp).__name__,
+                                                      resp.errno, resp.message)
+        else:
+            print "The request returned an unknown object of type " \
+                  "'{}'".format(type(resp).__name__)
 
     iteration_count += 1
 
