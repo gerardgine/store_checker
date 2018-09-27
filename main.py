@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
+from utils import check_twilio_version
+check_twilio_version()
+
 import argparse
 import ConfigParser
 import datetime
-import requests
 import time
-from twilio.rest import TwilioRestClient
+
+import requests
+from twilio.rest import Client
+
 
 config = ConfigParser.ConfigParser()
 config.read('config.cfg')
@@ -19,7 +24,7 @@ CALL_TIMEOUT = config.getint('Twilio', 'CALL_TIMEOUT')
 GRACE_PERIOD = config.getint('Twilio', 'GRACE_PERIOD')
 RETRIAL_INTERVAL = config.getint('Twilio', 'RETRIAL_INTERVAL')
 
-client = TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN)
+client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 STORES = {
     "WACR": {
@@ -131,7 +136,7 @@ while True:
                                                url=TWILIO_URL,
                                                timeout=CALL_TIMEOUT)
                     time.sleep(CALL_TIMEOUT + GRACE_PERIOD)
-                    call_status = client.calls.get(call.sid).status.upper()
+                    call_status = client.calls(call.sid).fetch().status.upper()
                     if call_status == "COMPLETED":
                         call_successful = True
                         print "Call succesfully made. Resuming checks."
