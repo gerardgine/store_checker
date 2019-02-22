@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-from utils import check_twilio_version
-check_twilio_version()
-
 import argparse
-import ConfigParser
+import configparser
 import datetime
 import time
 
 import requests
+
 from twilio.rest import Client
+from utils import check_twilio_version
 
 
-config = ConfigParser.ConfigParser()
+check_twilio_version()
+
+config = configparser.ConfigParser()
 config.read('config.cfg')
 
 TO_NUMBER = config.get('Twilio', 'TO_NUMBER')
@@ -89,19 +90,19 @@ args = parser.parse_args()
 if args.location is None:
     stores_to_check = [v for k, v in STORES.iteritems()]
 elif args.location not in STORES:
-    print "Invalid store"
+    print("Invalid store")
     exit(1)
 else:
     stores_to_check = [STORES[args.location]]
 
-print "Checking {}...".format(", ".join(
-    store["name"] for store in stores_to_check))
+print("Checking {}...".format(", ".join(
+    store["name"] for store in stores_to_check)))
 
 iteration_count = 0
 last_date = {}
 
 while True:
-    print "\n*** Starting new check @ {}".format(datetime.datetime.now())
+    print("\n*** Starting new check @ {}".format(datetime.datetime.now()))
     ok_responses = {}
     ko_responses = {}
     for selected_store in stores_to_check:
@@ -115,7 +116,7 @@ while True:
             ko_responses[selected_store["name"]] = e
 
     for store_name, resp in ok_responses.iteritems():
-        print "Successful response from {}".format(store_name)
+        print("Successful response from {}".format(store_name))
         data = resp.json()
         pickup_search_quote = data["body"]["stores"][0]["partsAvailability"] \
             ["MMEF2AM/A"]["pickupSearchQuote"]
@@ -127,7 +128,7 @@ while True:
                         last_date[store_name] != date):
                 success_msg = "The new date for {} is {}".format(
                     store_name, date)
-                print "---> " + success_msg
+                print("---> " + success_msg)
                 client.messages.create(to=TO_NUMBER, from_=FROM_NUMBER,
                                        body=success_msg)
                 call_successful = False
@@ -139,31 +140,30 @@ while True:
                     call_status = client.calls(call.sid).fetch().status.upper()
                     if call_status == "COMPLETED":
                         call_successful = True
-                        print "Call succesfully made. Resuming checks."
+                        print("Call succesfully made. Resuming checks.")
                     else:
-                        print "Call status '{}'. Attempting new call" \
-                              "...".format(call_status)
+                        print("Call status '{}'. Attempting new call" \
+                              "...".format(call_status))
             elif iteration_count == 0:
-                print "First iteration: {}".format(date)
+                print("First iteration: {}".format(date))
             else:
-                print "Date hasn't changed ({})".format(date)
+                print("Date hasn't changed ({})".format(date))
             last_date[store_name] = date
         else:
-            print "The result couldn't be split by '<br/>': {}".format(
-                pickup_search_quote)
+            print("The result couldn't be split by '<br/>': {}".format(
+                pickup_search_quote))
 
     for store_name, resp in ko_responses.iteritems():
         if isinstance(resp, requests.Response):
-            print "The request to {} returned status code {} and " \
-                  "body:\n{}".format(store_name, resp.status_code, resp.text)
+            print("The request to {} returned status code {} and " \
+                  "body:\n{}".format(store_name, resp.status_code, resp.text))
         elif isinstance(resp, Exception):
-            print "The request to {} raised a '{}' exception with error " \
-                  "number {} and message:\n{}".format(store_name,
-                                                      type(resp).__name__,
-                                                      resp.errno, resp.message)
+            print("The request to {} raised a '{}' exception with error " \
+                  "number {} and message:\n{}".format(
+                store_name, type(resp).__name__, resp.errno, resp.message))
         else:
-            print "The request returned an unknown object of type " \
-                  "'{}'".format(type(resp).__name__)
+            print("The request returned an unknown object of type " \
+                  "'{}'".format(type(resp).__name__))
 
     iteration_count += 1
 
